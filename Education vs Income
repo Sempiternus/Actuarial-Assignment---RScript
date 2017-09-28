@@ -9,8 +9,6 @@ names(Income) <- c("LGA", "Median Income")
 Income$`Median Income`=as.double(levels(Income$`Median Income`))[Income$`Median Income`]
 Income <- Income[c(-1),]
 
-
---------------------------------
 # Extract Postgraduate Qualifications (Fresh)
 PostGrad <- subset(DEmployment, select = c(2, 3, 37, 38, 39,  40, 41, 42))
 PostGrad <- PostGrad[complete.cases(PostGrad),]
