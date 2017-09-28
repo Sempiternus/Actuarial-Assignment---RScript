@@ -1,0 +1,37 @@
+# Import relavent data files
+library(readxl)
+DEmployment <- read_excel("ABS - EducationIncome.xlsx")
+IncomeData <- read_excel("Income2011.xls.xlsx", sheet = 6, skip = 4)
+
+# Extract columns for LGA name/2011 Median Income, fix values
+Income <- data.frame(LGA=c(IncomeData[2]), INCOME=c(IncomeData[19]))
+names(Income) <- c("LGA", "Median Income")
+Income$`Median Income`=as.double(levels(Income$`Median Income`))[Income$`Median Income`]
+Income <- Income[c(-1),]
+
+# Extract Postgraduate Qualifications
+PostGrad <- data.frame(LABEL=c(DEmployment[2]), YEAR=c(DEmployment[3]), POST=c(DEmployment[37]), GRAD=c(DEmployment[38]), BACH=c(DEmployment[39]), ADV=c(DEmployment[40]), CERT=c(DEmployment[41]), INAD=c(DEmployment[42]))
+PostGrad <- PostGrad[complete.cases(PostGrad),]
+PostGrad <- PostGrad[PostGrad$X__2 == 2011,]
+
+PostGradQ <- subset(PostGrad, select = -c(X__2,X__41))
+cols = c(2, 3, 4, 5, 6); 
+PostGradQ[ ,cols] = apply(PostGradQ[,cols], 2, function(x) as.numeric(as.character(x)))
+names(PostGradQ) <- c("LGA", "Postgraduate Degree", "Graduate Diploma", "Bachelor Degree", "Advanced Diploma", "Certificate")
+
+# Merge Median Income and Postgrad Qualifications
+MIncome_PostGrad <- merge(Income, PostGradQ, by = "LGA")
+
+# Graph Percentage of Certificate holders against Median Income
+library(ggplot2)
+ggplot(MIncome_PostGrad, aes(`Median Income`, Certificate)) +
+  geom_point() +
+  labs(y = "Certificate (%)", x = "Median Employee Income ($)", title = "Median Income vs Percentage of Certificate Holders") +
+  geom_smooth(method = "lm", se = FALSE) + theme_classic()
+
+
+# Graph Percentage of Postgraduate Degrees against Median Income
+ggplot(MIncome_PostGrad, aes(`Median Income`, `Postgraduate Degree`)) +
+geom_point() +
+labs(y = "Postgraduate Degree (%)", x = "Median Employee Income ($)", title = "Median Income vs Percentage of Postgraduate Degrees") +
+geom_smooth(method = "lm", se = FALSE) + theme_classic()
