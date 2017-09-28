@@ -1,0 +1,68 @@
+install.packages("readxl")
+library("readxl")
+
+#Import data sets of Aboriginal Health statistics from 2011 - 2015 and extract columns of disease type and death rate
+
+AboriginalDeaths2015 <- read_excel("AboriginalDeaths2015.xls", skip = 11, sheet = 7, col_names = FALSE)
+dfAboriginalDeaths2015 <- as.data.frame(AboriginalDeaths2015)
+AusDeaths2015 <- data.frame("Cause of Death" = as.factor(c(dfAboriginalDeaths2015[1:4,1])),
+                            "2015 Stnd Death Rate (Indigenous)" = c(dfAboriginalDeaths2015[1:4,6]),
+                            "2015 Stnd Death Rate (Non-Indigenous)" = c(dfAboriginalDeaths2015[1:4,12]))
+
+AboriginalDeaths2014 <- read_excel("AboriginalDeaths2014.xls", skip = 12, sheet = 7, col_names = FALSE)
+dfAboriginalDeaths2014 <- as.data.frame(AboriginalDeaths2014)
+AusDeaths2014 <- data.frame("Cause of Death" = as.factor(c(dfAboriginalDeaths2014[1:4,1])),
+                            "2014 Stnd Death Rate (Indigenous)" = c(dfAboriginalDeaths2014[1:4,7]),
+                            "2014 Stnd Death Rate (Non-Indigenous)" = c(dfAboriginalDeaths2014[1:4,13]))
+
+AboriginalDeaths2013 <- read_excel("AboriginalDeaths2013.xls", skip = 12, sheet = 7, col_names = FALSE)
+dfAboriginalDeaths2013 <- as.data.frame(AboriginalDeaths2013)
+AusDeaths2013 <- data.frame("Cause of Death" = c(dfAboriginalDeaths2013[1:4,1]),
+                            "2013 Stnd Death Rate (Indigenous)" = c(dfAboriginalDeaths2013[1:4,7]),
+                            "2013 Stnd Death Rate (Non-Indigenous)" = c(dfAboriginalDeaths2013[1:4,13]))
+
+AboriginalDeaths2012 <- read_excel("AboriginalDeaths2012.xls", skip = 12, sheet = 7, col_names = FALSE)
+dfAboriginalDeaths2012 <- as.data.frame(AboriginalDeaths2012)
+AusDeaths2012 <- data.frame("Cause of Death" = as.factor(c(dfAboriginalDeaths2012[1:4,1])),
+                            "2012 Stnd Death Rate (Indigenous)" = c(dfAboriginalDeaths2012[1:4,7]),
+                            "2012 Stnd Death Rate (Non-Indigenous)" = c(dfAboriginalDeaths2012[1:4,13]))
+
+#Create Data Frame merging the years for Indigenous health statistics 
+Df1 <- data.frame("Indigenous 2012" = c(TotalAusDeaths[,2]),
+                  "Non-Indigenous 2012" = c(0,0,0,0),
+                  "Indigenous 2013" = c(TotalAusDeaths[,4]),
+                  "Non-Indigenous 2013" = c(0,0,0,0),
+                  "Indigenous 2014" = c(TotalAusDeaths[,6]),
+                  "Non-Indigenous 2014" = c(0,0,0,0),
+                  "Indigenous 2015" = c(TotalAusDeaths[,8]),
+                  "Non-Indigenous 2015" = c(0,0,0,0),
+                  row.names = c("Diabetes", "Heart Diseases", "Lung Cancer", "Respiratory Diseases"))
+mDf1 <- as.matrix(Df1)
+
+#Create Data Frame merging the years for Non-Indigenous health statistics
+Df2 <- data.frame("Indigenous 2012" = c(0,0,0,0),
+                  "Non-Indigenous 2012" = c(TotalAusDeaths[,3]),
+                  "Indigenous 2013" = c(0,0,0,0),
+                  "Non-Indigenous 2013" = c(TotalAusDeaths[,5]),
+                  "Indigenous 2014" = c(0,0,0,0),
+                  "Non-Indigenous 2014" = c(TotalAusDeaths[,7]),
+                  "Indigenous 2015" = c(0,0,0,0),
+                  "Non-Indigenous 2015" = c(TotalAusDeaths[,9]),
+                  row.names = c("Diabetes", "Heart Diseases", "Lung Cancer", "Respiratory Diseases"))
+mDf2 <- as.matrix(Df2)
+
+#Create a "beside" barplot showing Indigenous trends
+barplot(height = mDf1, beside =TRUE, ylim = c(0,200), 
+        xlab = "Year", ylab = "Standardised Death Rate (per 100,000)",
+        main = "Standardised Death Rate for Diseases per Year",
+        legend.text = c("Diabetes", "Heart Disease", "Lung Cancer", "Respiratory Disease"),
+        border = c("red", "blue", "seagreen", "purple"),
+        col = c("lightcoral", "lightskyblue", "green", "mediumpurple"))
+
+#Overlay a second barplot showing Non-Indigenous Trends with different colour scheme
+barplot(height = mDf2, beside =TRUE, ylim = c(0,200), 
+        xlab = "Year", ylab = "Standardised Death Rate (per 100,000)",
+        border = c("red", "blue", "seagreen", "purple"),
+        col = c("lightcoral", "lightskyblue", "green", "mediumpurple"),
+        density = 25, angle = 75,
+        add = TRUE)
