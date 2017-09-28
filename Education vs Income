@@ -16,7 +16,7 @@ PostGrad <- PostGrad[PostGrad$X__2 == 2011,]
 PostGradQ <- subset(PostGrad, select = -c(X__2,X__41))
 cols = c(2, 3, 4, 5, 6); 
 PostGradQ[ ,cols] = apply(PostGradQ[,cols], 2, function(x) as.numeric(as.character(x)))
-names(PostGradQ) <- c("LGA", "Postgraduate Degree", "Graduate Diploma", "Bachelor Degree", "Advanced Diploma", "Certificate")
+names(PostGradQ) <- c("LGA", "Postgraduate", "Graduate Diploma", "Bachelor Degree", "Advanced Diploma", "Certificate")
 
 # Merge Median Income and Postgrad Qualifications
 MIncome_PostGrad <- merge(Income, PostGradQ, by = "LGA")
@@ -30,7 +30,7 @@ ggplot(MIncome_PostGrad, aes(`Median Income`, Certificate)) +
 
 
 # Graph Percentage of Postgraduate Degrees against Median Income
-ggplot(MIncome_PostGrad, aes(`Median Income`, `Postgraduate Degree`)) +
+ggplot(MIncome_PostGrad, aes(`Median Income`, Postgraduate)) +
 geom_point() +
 labs(y = "Postgraduate Degree (%)", x = "Median Employee Income ($)", title = "Median Income vs Percentage of Postgraduate Degrees") +
 geom_smooth(method = "lm", se = FALSE) + theme_classic()

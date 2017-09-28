@@ -15,7 +15,7 @@ names(DataSet) <- c("LGA", "Years", "StandardisedDeathRate")
 # Extracting all the data from 2011
 x2011 <- DataSet[DataSet$Years == 2011,]
 
-# Merge Postgraduate Qualifications from earlier calculations and Death Rate
+# Merge 2011 Postgraduate Qualifications and Death Rate
 Post_Death2011 <- merge(x2011, PostGradQ, by = "LGA")
 
 # Compare Certificate holders with Death Rate
