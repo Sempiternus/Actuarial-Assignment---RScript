@@ -38,22 +38,6 @@ ggplot(Post_Death2011, aes(Certificate, StandardisedDeathRate)) +
   geom_point() +
   labs(x = 'Certificate Holders (%)', y = 'Standardised Death Rate (per 1000)', title = 'Certificate vs Death') + theme_classic() +
   geom_smooth(method = "lm", se = FALSE)
-  
-  # Compare Advanced Diploma with Death Rate
-ggplot(Post_Death2011, aes(Advanced_Diploma, StandardisedDeathRate)) +
-  geom_point() +
-  labs(x = 'Advanced Diploma Holders (%)', y = 'Standardised Death Rate (per 1000)', title = 'Advanced Diploma vs Death') + theme_classic()
-
-# Compare Bachelor with Death Rate
-ggplot(Post_Death2011, aes(Bachelor, StandardisedDeathRate)) +
-  geom_point() +
-  labs(x = 'Bachelor Holders (%)', y = 'Standardised Death Rate (per 1000)', title = 'Bachelor vs Death') + theme_classic()
-
-# Compare Graduate Diploma with Death Rate
-ggplot(Post_Death2011, aes(Graduate_Diploma, StandardisedDeathRate)) +
-  geom_point() +
-  labs(x = 'Graduate Diploma Holders (%)', y = 'Standardised Death Rate (per 1000)', title = 'Graduate Diploma vs Death') + theme_classic()
-
 
 # Compare Postgraduate with Death Rate
 ggplot(Post_Death2011, aes(Postgraduate, StandardisedDeathRate)) +
