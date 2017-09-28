@@ -1,11 +1,10 @@
 # Import dataset with LGA, Age, Standardised Death rate 
 library(readxl)
-SortedByAge <- read_excel("Desktop/UNSW/Introduction to Actuarial Studies/Group Assignment/Assignment data files/Age, Birth & Death etc..xlsx")
-DFrame<-as.data.frame((SortedByAge))
+DFrame <- read_excel("ABS - AgeGender.xlsx")
 
 # Extracting relevant columns and getting rid of n/a
-Filtered<-data.frame(CODE=c(DFrame[1]), LABEL=c(DFrame[2]), YEAR=c(DFrame[3]), DEATHS=c(DFrame[76]), DRATE=c(DFrame[77]))
-Data <- Filtered[complete.cases(Filtered),]
+Data <-data.frame(CODE=c(DFrame[1]), LABEL=c(DFrame[2]), YEAR=c(DFrame[3]), DEATHS=c(DFrame[76]), DRATE=c(DFrame[77]))
+Data <- Data[complete.cases(Data),]
 
 # Create Data Frame for Suburb, Year and Standardised Death Rate Columns, convert 'Standardised death rate' column from factor to numeric
 DataSet <- data.frame(Data$Australian.Bureau.of.Statistics, Data$X__2, as.numeric(as.character(Data$X__76)))
@@ -17,23 +16,24 @@ names(DataSet) <- c("Suburbs", "Years", "StandardisedDeathRate")
 x2011 <- DataSet[DataSet$Years == 2011,]
 
 # Import data file with employment status, personal income
-library(readxl)
-SortedByEmployment <- read_excel("Personal Income, Employment.xlsx")
-DEmployment <- as.data.frame((SortedByEmployment))
+DEmployment <- read_excel("ABS - EducationIncome.xlsx")
 
-# Filter out Postgraduate Qualifications Data
-Post <- data.frame(CODE=c(DEmployment[1]), SUBURB=c(DEmployment[2]), YEAR=c(DEmployment[3]), OVER15=c(DEmployment[36]), POST=c(DEmployment[37]), GRAD=c(DEmployment[38]), BACH=c(DEmployment[39]), ADV=c(DEmployment[40]), CERT=c(DEmployment[41]), INAD=c(DEmployment[42]))
-Post1 <- Post[complete.cases(Post),]
-Postgraduate <- data.frame(Post1$Australian.Bureau.of.Statistics, Post1$X__2, as.numeric(as.character(Post1$X__35)), as.numeric(as.character(Post1$X__36)), as.numeric(as.character(Post1$X__37)), as.numeric(as.character(Post1$X__38)), as.numeric(as.character(Post1$X__39)), as.numeric(as.character(Post1$X__40)), as.numeric(as.character(Post1$X__41)))
-names(Postgraduate) <- c("Suburbs", "Years", "Population_Over_15", "Postgraduate", "Graduate_Diploma", "Bachelor", "Advanced_Diploma", "Certificate", "Not Stated")
+#Test for next steps
+Post <- subset(DEmployment, select = c(2, 3, 36, 37, 38, 39, 40, 41, 42))
+PostGrad<- Post[complete.cases(Post),]
+cols = c(2, 3, 4, 5, 6, 7); 
+PostGrad[ ,cols] = apply(PostGrad[,cols], 2, function(x) as.numeric(as.character(x)))
+names(PostGrad) <- c("Suburbs", "Years", "Population_Over_15", "Postgraduate", "Graduate_Diploma", "Bachelor", "Advanced_Diploma", "Certificate", "Not Stated")
+
 
 # Extract 2011 Postgraduate Qualifications data 
-Postgraduate2011 <- Postgraduate[Postgraduate$Years == 2011,]
+PostGrad2011 <- PostGrad[PostGrad$Years == 2011,]
 
 # Merge 2011 Postgraduate Qualifications and Death Rate
-Post_Death2011 <- merge(x2011, Postgraduate2011, by = "Suburbs")
+Post_Death2011 <- merge(x2011, PostGrad2011, by = "Suburbs")
 
 # Compare Certificate holders with Death Rate
+library(ggplot2)
 ggplot(Post_Death2011, aes(Certificate, StandardisedDeathRate)) +
   geom_point() +
   labs(x = 'Certificate Holders (%)', y = 'Standardised Death Rate (per 1000)', title = 'Certificate vs Death') + theme_classic() +
