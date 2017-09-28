@@ -1,0 +1,158 @@
+################### Linking Postgraduate Qualifications (Education) to Standardised Death Rate
+
+# Import dataset with LGA, Age, Standardised Death rate 
+library(readxl)
+SortedByAge <- read_excel("Desktop/UNSW/Introduction to Actuarial Studies/Group Assignment/Assignment data files/Age, Birth & Death etc..xlsx")
+DFrame<-as.data.frame((SortedByAge))
+
+# Extracting relevant columns and getting rid of n/a
+Filtered<-data.frame(CODE=c(DFrame[1]), LABEL=c(DFrame[2]), YEAR=c(DFrame[3]), DEATHS=c(DFrame[76]), DRATE=c(DFrame[77]))
+Data <- Filtered[complete.cases(Filtered),]
+
+# Create Data Frame for Suburb, Year and Standardised Death Rate Columns, convert 'Standardised death rate' column from factor to numeric
+DataSet <- data.frame(Data$Australian.Bureau.of.Statistics, Data$X__2, as.numeric(as.character(Data$X__76)))
+
+# Rename Columns of Data Frame
+names(DataSet) <- c("Suburbs", "Years", "StandardisedDeathRate")
+
+# Extracting all the data from 2011
+x2011 <- DataSet[DataSet$Years == 2011,]
+
+# Import data file with employment status, personal income
+library(readxl)
+SortedByEmployment <- read_excel("Personal Income, Employment.xlsx")
+DEmployment <- as.data.frame((SortedByEmployment))
+
+# Filter out Postgraduate Qualifications Data
+Post <- data.frame(CODE=c(DEmployment[1]), SUBURB=c(DEmployment[2]), YEAR=c(DEmployment[3]), OVER15=c(DEmployment[36]), POST=c(DEmployment[37]), GRAD=c(DEmployment[38]), BACH=c(DEmployment[39]), ADV=c(DEmployment[40]), CERT=c(DEmployment[41]), INAD=c(DEmployment[42]))
+Post1 <- Post[complete.cases(Post),]
+Postgraduate <- data.frame(Post1$Australian.Bureau.of.Statistics, Post1$X__2, as.numeric(as.character(Post1$X__35)), as.numeric(as.character(Post1$X__36)), as.numeric(as.character(Post1$X__37)), as.numeric(as.character(Post1$X__38)), as.numeric(as.character(Post1$X__39)), as.numeric(as.character(Post1$X__40)), as.numeric(as.character(Post1$X__41)))
+names(Postgraduate) <- c("Suburbs", "Years", "Population_Over_15", "Postgraduate", "Graduate_Diploma", "Bachelor", "Advanced_Diploma", "Certificate", "Not Stated")
+
+# Extract 2011 Postgraduate Qualifications data 
+Postgraduate2011 <- Postgraduate[Postgraduate$Years == 2011,]
+
+# Merge 2011 Postgraduate Qualifications and Death Rate
+Post_Death2011 <- merge(x2011, Postgraduate2011, by = "Suburbs")
+
+# Compare Certificate holders with Death Rate
+ggplot(Post_Death2011, aes(Certificate, StandardisedDeathRate)) +
+  geom_point() +
+  labs(x = 'Certificate Holders (%)', y = 'Standardised Death Rate (per 1000)', title = 'Certificate vs Death') + theme_classic() +
+  geom_smooth(method = "lm", se = FALSE)
+
+# Compare Postgraduate with Death Rate
+ggplot(Post_Death2011, aes(Postgraduate, StandardisedDeathRate)) +
+  geom_point() +
+  labs(x = 'Postgraduate Holders (%)', y = 'Standardised Death Rate (per 1000)', title = 'Postgraduate vs Death') + theme_classic() +
+  geom_smooth(method = "lm", se = FALSE)
+
+##################Linking Education to Income
+# Import relavent data files
+library(readxl)
+DEmployment <- read_excel("ABS - EducationIncome.xlsx")
+IncomeData <- read_excel("Income2011.xls.xlsx", sheet = 6, skip = 4)
+
+# Extract columns for LGA name/2011 Median Income, fix values
+Income <- data.frame(LGA=c(IncomeData[2]), INCOME=c(IncomeData[19]))
+names(Income) <- c("LGA", "Median Income")
+Income$`Median Income`=as.double(levels(Income$`Median Income`))[Income$`Median Income`]
+Income <- Income[c(-1),]
+
+# Extract Postgraduate Qualifications
+PostGrad <- data.frame(LABEL=c(DEmployment[2]), YEAR=c(DEmployment[3]), POST=c(DEmployment[37]), GRAD=c(DEmployment[38]), BACH=c(DEmployment[39]), ADV=c(DEmployment[40]), CERT=c(DEmployment[41]), INAD=c(DEmployment[42]))
+PostGrad <- PostGrad[complete.cases(PostGrad),]
+PostGrad <- PostGrad[PostGrad$X__2 == 2011,]
+
+PostGradQ <- subset(PostGrad, select = -c(X__2,X__41))
+cols = c(2, 3, 4, 5, 6); 
+PostGradQ[ ,cols] = apply(PostGradQ[,cols], 2, function(x) as.numeric(as.character(x)))
+names(PostGradQ) <- c("LGA", "Postgraduate Degree", "Graduate Diploma", "Bachelor Degree", "Advanced Diploma", "Certificate")
+
+# Merge Median Income and Postgrad Qualifications
+MIncome_PostGrad <- merge(Income, PostGradQ, by = "LGA")
+
+# Graph Percentage of Certificate holders against Median Income
+library(ggplot2)
+ggplot(MIncome_PostGrad, aes(`Median Income`, Certificate)) +
+  geom_point() +
+  labs(y = "Certificate (%)", x = "Median Employee Income ($)", title = "Median Income vs Percentage of Certificate Holders") +
+  geom_smooth(method = "lm", se = FALSE) + theme_classic()
+
+
+# Graph Percentage of Postgraduate Degrees against Median Income
+ggplot(MIncome_PostGrad, aes(`Median Income`, `Postgraduate Degree`)) +
+geom_point() +
+labs(y = "Postgraduate Degree (%)", x = "Median Employee Income ($)", title = "Median Income vs Percentage of Postgraduate Degrees") +
+geom_smooth(method = "lm", se = FALSE) + theme_classic()
+
+ ##################Linking Disease to Standardised Death Rate between Indigenous and Non-Indigenous Australians
+
+install.packages("readxl")
+library("readxl")
+
+#Import data sets of Aboriginal Health statistics from 2011 - 2015 and extract columns of disease type and death rate
+
+AboriginalDeaths2015 <- read_excel("AboriginalDeaths2015.xls", skip = 11, sheet = 7, col_names = FALSE)
+dfAboriginalDeaths2015 <- as.data.frame(AboriginalDeaths2015)
+AusDeaths2015 <- data.frame("Cause of Death" = as.factor(c(dfAboriginalDeaths2015[1:4,1])),
+                            "2015 Stnd Death Rate (Indigenous)" = c(dfAboriginalDeaths2015[1:4,6]),
+                            "2015 Stnd Death Rate (Non-Indigenous)" = c(dfAboriginalDeaths2015[1:4,12]))
+
+AboriginalDeaths2014 <- read_excel("AboriginalDeaths2014.xls", skip = 12, sheet = 7, col_names = FALSE)
+dfAboriginalDeaths2014 <- as.data.frame(AboriginalDeaths2014)
+AusDeaths2014 <- data.frame("Cause of Death" = as.factor(c(dfAboriginalDeaths2014[1:4,1])),
+                            "2014 Stnd Death Rate (Indigenous)" = c(dfAboriginalDeaths2014[1:4,7]),
+                            "2014 Stnd Death Rate (Non-Indigenous)" = c(dfAboriginalDeaths2014[1:4,13]))
+
+AboriginalDeaths2013 <- read_excel("AboriginalDeaths2013.xls", skip = 12, sheet = 7, col_names = FALSE)
+dfAboriginalDeaths2013 <- as.data.frame(AboriginalDeaths2013)
+AusDeaths2013 <- data.frame("Cause of Death" = c(dfAboriginalDeaths2013[1:4,1]),
+                            "2013 Stnd Death Rate (Indigenous)" = c(dfAboriginalDeaths2013[1:4,7]),
+                            "2013 Stnd Death Rate (Non-Indigenous)" = c(dfAboriginalDeaths2013[1:4,13]))
+
+AboriginalDeaths2012 <- read_excel("AboriginalDeaths2012.xls", skip = 12, sheet = 7, col_names = FALSE)
+dfAboriginalDeaths2012 <- as.data.frame(AboriginalDeaths2012)
+AusDeaths2012 <- data.frame("Cause of Death" = as.factor(c(dfAboriginalDeaths2012[1:4,1])),
+                            "2012 Stnd Death Rate (Indigenous)" = c(dfAboriginalDeaths2012[1:4,7]),
+                            "2012 Stnd Death Rate (Non-Indigenous)" = c(dfAboriginalDeaths2012[1:4,13]))
+
+#Create Data Frame merging the years for Indigenous health statistics 
+Df1 <- data.frame("Indigenous 2012" = c(TotalAusDeaths[,2]),
+                  "Non-Indigenous 2012" = c(0,0,0,0),
+                  "Indigenous 2013" = c(TotalAusDeaths[,4]),
+                  "Non-Indigenous 2013" = c(0,0,0,0),
+                  "Indigenous 2014" = c(TotalAusDeaths[,6]),
+                  "Non-Indigenous 2014" = c(0,0,0,0),
+                  "Indigenous 2015" = c(TotalAusDeaths[,8]),
+                  "Non-Indigenous 2015" = c(0,0,0,0),
+                  row.names = c("Diabetes", "Heart Diseases", "Lung Cancer", "Respiratory Diseases"))
+mDf1 <- as.matrix(Df1)
+
+#Create Data Frame merging the years for Non-Indigenous health statistics
+Df2 <- data.frame("Indigenous 2012" = c(0,0,0,0),
+                  "Non-Indigenous 2012" = c(TotalAusDeaths[,3]),
+                  "Indigenous 2013" = c(0,0,0,0),
+                  "Non-Indigenous 2013" = c(TotalAusDeaths[,5]),
+                  "Indigenous 2014" = c(0,0,0,0),
+                  "Non-Indigenous 2014" = c(TotalAusDeaths[,7]),
+                  "Indigenous 2015" = c(0,0,0,0),
+                  "Non-Indigenous 2015" = c(TotalAusDeaths[,9]),
+                  row.names = c("Diabetes", "Heart Diseases", "Lung Cancer", "Respiratory Diseases"))
+mDf2 <- as.matrix(Df2)
+
+#Create a "beside" barplot showing Indigenous trends
+barplot(height = mDf1, beside =TRUE, ylim = c(0,200), 
+        xlab = "Year", ylab = "Standardised Death Rate (per 100,000)",
+        main = "Standardised Death Rate for Diseases per Year",
+        legend.text = c("Diabetes", "Heart Disease", "Lung Cancer", "Respiratory Disease"),
+        border = c("red", "blue", "seagreen", "purple"),
+        col = c("lightcoral", "lightskyblue", "green", "mediumpurple"))
+
+#Overlay a second barplot showing Non-Indigenous Trends with different colour scheme
+barplot(height = mDf2, beside =TRUE, ylim = c(0,200), 
+        xlab = "Year", ylab = "Standardised Death Rate (per 100,000)",
+        border = c("red", "blue", "seagreen", "purple"),
+        col = c("lightcoral", "lightskyblue", "green", "mediumpurple"),
+        density = 25, angle = 75,
+        add = TRUE)
