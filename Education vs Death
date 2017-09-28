@@ -21,7 +21,7 @@ DEmployment <- read_excel("ABS - EducationIncome.xlsx")
 #Filter out Postgraduate Qualifications Data
 Post <- subset(DEmployment, select = c(2, 3, 36, 37, 38, 39, 40, 41, 42))
 PostGrad<- Post[complete.cases(Post),]
-cols = c(2, 3, 4, 5, 6, 7); 
+cols = c(3, 4, 5, 6, 7, 8, 9); 
 PostGrad[ ,cols] = apply(PostGrad[,cols], 2, function(x) as.numeric(as.character(x)))
 names(PostGrad) <- c("Suburbs", "Years", "Population_Over_15", "Postgraduate", "Graduate_Diploma", "Bachelor", "Advanced_Diploma", "Certificate", "Not Stated")
 
